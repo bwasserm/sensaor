@@ -1,0 +1,31 @@
+[package]
+name = "sensaor"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev]
+panic = "abort"
+opt-level = "s"
+
+[dependencies]
+ch32v00x-hal = { path = "../ch32v00x-hal/", features = ["ch32v003f4p6", "rt"] }
+riscv-rt = "0.11"
+panic-halt = "0.2.0"
+vcell = "0.1.3"
+# ch32v00x-hal = { git = "https://github.com/ch32-rs/ch32v00x-hal.git", branch = "main" }
+# ch32-hal = "0.0.0"
+# embassy-sync = { version = "0.6.0",  features = ["defmt"] }
+# embassy-executor = { version = "0.6.0", features = ["arch-riscv32", "executor-thread", "defmt", "integrated-timers"] }
+# embassy-time = { version = "0.3.2", features = ["defmt", "defmt-timestamp-uptime", "tick-hz-32_768"] }
+# defmt = "0.3"
+# defmt-rtt = "0.4"
+# embedded-hal = "1.0"
+# panic-probe = { version = "0.3", features = ["print-defmt"] }
+# heapless = { version = "0.8", default-features = false }
+# riscv = "0.11.1"
+qingke = "0.1.7"
+qingke-rt = "0.1.7"
+ch32v0 = { version = "0.1.7", features = ["critical-section"] }
+
+[patch.crates-io]
+riscv-rt = { git = "https://github.com/9names/riscv-rt", branch = "rv32e" }
