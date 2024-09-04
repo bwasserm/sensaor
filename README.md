@@ -77,10 +77,12 @@ PA1 as an arbitrary GPIO pin choice, but it is already tied to the oscillator.
 I used the [wlink](https://github.com/ch32-rs/wlink) application with the WLinkE . It turned out to be surprisingly easy to run and use to dump registers and flash. It's not even
 necessary to convert the elf file produced by cargo/rustc into an Intel Hex file or a bin first.
 
-Programming command: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 flash target/riscv32ec-unknown-none-elf/debug/sensaor`
-Get registers command: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 regs`
-Dump the beginning of program flash: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 dump 0x00000000 400`
+* Programming command: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 flash target/riscv32ec-unknown-none-elf/debug/sensaor`
+* Get registers command: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 regs`
+* Dump the beginning of program flash: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 dump 0x00000000 400`
+
 The sudo is becuase I'm too lazy to figure out which group to add myself to to get permissions to talk to the programmer.
+
 `wlink` also has a serial terminal functionality that works with the WLinkE debugger I'm using. However, my WLinkE isn't showing up as a serial device (`/dev/ttyASM0` or similar),
 so I can't connect to that. I'm guessing it's a udev rule I need to update, since `lsusb` indicates multiple modem/serial interfaces on the USB device. Probably an Arch (BTW) config
 issue on my end.
