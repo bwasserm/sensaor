@@ -296,6 +296,8 @@ version = "0.1.0"
 dependencies = [
  "ch32v0",
  "ch32v00x-hal",
+ "embedded-hal 0.2.7",
+ "embedded-hal 1.0.0",
  "panic-halt",
  "qingke",
  "qingke-rt",

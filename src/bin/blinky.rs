@@ -1,16 +1,16 @@
 #![no_std]
 #![no_main]
 
-use hal::println;
+// use hal::println;
 use panic_halt as _;
 
-use ch32v00x_hal as hal;
+// use ch32v00x_hal as hal;
 use ch32v00x_hal::prelude::*;
 use qingke::riscv;
 
 #[qingke_rt::entry]
 fn main() -> ! {
-    hal::debug::SDIPrint::enable();
+    // hal::debug::SDIPrint::enable();
 
     // println!("Hello world from ch32v003!");
     // To ensure safe access to peripherals, all types are !Copy singletons. The
@@ -28,14 +28,9 @@ fn main() -> ! {
     let mut led2 = gpiod.pd4.into_open_drain_output();
 
     loop {
-        // led1.toggle();
-        // led2.toggle();
         led1.toggle();
         led2.toggle();
-        // println!("led toggle");
 
-        unsafe {
-            riscv::asm::delay(4800000);
-        }
+        riscv::asm::delay(10000000);
     }
 }
