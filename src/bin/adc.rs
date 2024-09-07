@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-use embedded_hal_02::adc::{Channel, OneShot};
+use embedded_hal_02::adc::OneShot;
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 

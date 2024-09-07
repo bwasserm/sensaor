@@ -89,3 +89,9 @@ issue on my end.
 
 Using the LEDs on the dev board, it's important to set the GPIO pins into open drain mode, not push-pull. With the extra resistors from push-pull, not enough current flows to turn
 on the LEDs (since they already have resistors installed inline).
+
+## Reading the ADC to modify the blink
+
+First, I moved the binaries into src/bin/ so I could build multiple at once, and therefore make things easier to have multiple apps in work.
+
+The greatest challenge reading the ADC was finding the right part of the HAL to use. Eventually I found `ch32v00x-hal/src/adc.rs` `OneShot::read()`, but due to not knowing rust's import system well enough, spent way too long getting it to build. Through help, the answer is adding `embedded-hal-02` as a dependency, and `use embedded_hal_02::adc::OneShot;`. While I don't have a great analog source yet, the blink rate does apear to change when I touch the input pin, so I think it might be working.
