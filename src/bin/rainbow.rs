@@ -42,7 +42,7 @@ fn main() -> ! {
         .ssi().set_bit()
         .lsbfirst().clear_bit()
         .spe().clear_bit()
-        .br().variant(2_u8)  // 48MHz / 16 => 3Mhz
+        .br().variant(2_u8)  // 24MHz / 8 => 3Mhz
         .mstr().set_bit()
         .cpha().clear_bit()
         .cpol().clear_bit()
