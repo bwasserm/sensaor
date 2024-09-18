@@ -95,3 +95,7 @@ on the LEDs (since they already have resistors installed inline).
 First, I moved the binaries into src/bin/ so I could build multiple at once, and therefore make things easier to have multiple apps in work.
 
 The greatest challenge reading the ADC was finding the right part of the HAL to use. Eventually I found `ch32v00x-hal/src/adc.rs` `OneShot::read()`, but due to not knowing rust's import system well enough, spent way too long getting it to build. Through help, the answer is adding `embedded-hal-02` as a dependency, and `use embedded_hal_02::adc::OneShot;`. While I don't have a great analog source yet, the blink rate does apear to change when I touch the input pin, so I think it might be working.
+
+## Driving the Neopixels
+
+I wanted to use a Neopixel (WS2811/WS2812) library to drive them, but those rely on a timer or SPI implementation for the chip. The hal I'm using for the CH32V003 doesn't implement SPI. After getting annoyed with the traits required to get the existing timer library to work, I figured implementing enough of SPI to write would be easier. With enough time with the manual, and some C examples of setting up SPI on this chip to compare which bits are set in the control registers, I got my neopixel string to change colors.
