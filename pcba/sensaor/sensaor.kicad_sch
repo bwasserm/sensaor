@@ -2520,7 +2520,7 @@
 		)
 		(uuid "0fbb566f-3c04-412e-ae94-d0868b9582a8")
 	)
-	(label "GPIO2"
+	(label "ID0"
 		(at 86.36 62.23 0)
 		(fields_autoplaced yes)
 		(effects
@@ -2542,7 +2542,7 @@
 		)
 		(uuid "320149bf-ee3e-4607-9097-b7c008aac0e6")
 	)
-	(label "ID0"
+	(label "GPIO2"
 		(at 86.36 46.99 0)
 		(fields_autoplaced yes)
 		(effects
