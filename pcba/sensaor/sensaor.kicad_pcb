@@ -5670,6 +5670,18 @@
 			(justify left bottom)
 		)
 	)
+	(gr_text "CH32V003A4M6"
+		(at 87 75 0)
+		(layer "F.SilkS")
+		(uuid "931f12f3-9718-4980-b96b-e89dd441da86")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "Blue"
 		(at 101.04 80.5 0)
 		(layer "F.SilkS")
@@ -5756,7 +5768,7 @@
 		)
 	)
 	(gr_text "Programming"
-		(at 84.5 76.5 0)
+		(at 84.5 77 0)
 		(layer "F.SilkS")
 		(uuid "aae7f5b9-1369-44f0-96f4-2036c2f21c13")
 		(effects
@@ -5871,7 +5883,7 @@
 			(xy 74.54 82.8025) (xy 133.54 82.8025)
 		)
 		(height 4)
-		(gr_text "59.0000 mm"
+		(gr_text "2322.8346 mils"
 			(at 104.04 85.0025 0)
 			(layer "Cmts.User")
 			(uuid "2e3f96fd-80be-4e49-935a-ee5d99a9f527")
@@ -5901,11 +5913,11 @@
 		(layer "Cmts.User")
 		(uuid "7bfaa60e-5cc8-419b-b0e6-9eb9e110488d")
 		(pts
-			(xy 133.54 82.8025) (xy 133.54 52.8025)
+			(xy 133.54 82.8025) (xy 133.54 53)
 		)
 		(height 3.46)
-		(gr_text "30.0000 mm"
-			(at 135.2 67.8025 90)
+		(gr_text "1173.3268 mils"
+			(at 135.2 67.90125 90)
 			(layer "Cmts.User")
 			(uuid "7bfaa60e-5cc8-419b-b0e6-9eb9e110488d")
 			(effects
