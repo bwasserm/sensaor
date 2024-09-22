@@ -2509,7 +2509,7 @@
 		)
 		(uuid "0c315e57-cae5-4eb3-99eb-4191dd9ec5eb")
 	)
-	(label "AR"
+	(label "AG"
 		(at 113.03 52.07 0)
 		(fields_autoplaced yes)
 		(effects
@@ -2641,7 +2641,7 @@
 		)
 		(uuid "6b02186e-c0fd-4dc5-9536-be918b933388")
 	)
-	(label "AG"
+	(label "AR"
 		(at 113.03 54.61 0)
 		(fields_autoplaced yes)
 		(effects
