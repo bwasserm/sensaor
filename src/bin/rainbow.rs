@@ -3,7 +3,6 @@
 
 use ws2812_spi::{self, Ws2812};
 
-
 use embedded_hal_1::spi;
 
 use smart_leds::{brightness, SmartLedsWrite, RGB8};
@@ -11,57 +10,66 @@ use smart_leds::{brightness, SmartLedsWrite, RGB8};
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 
-use ch32v00x_hal::{self as hal};
 use ch32v00x_hal::prelude::*;
+use ch32v00x_hal::{self as hal};
 
 #[qingke_rt::entry]
 fn main() -> ! {
-
     // Constrain clocking registers
     let p = ch32v0::ch32v003::Peripherals::take().unwrap();
 
-    p.RCC.apb2pcenr.modify(|_, w| w
-        .spi1en().set_bit()
-        .adc1en().set_bit()
-        .iopcen().set_bit()
-    );
-    p.RCC.apb2prstr.modify(|_, w| w
-        .spi1rst().set_bit()
-    );
-    p.RCC.apb2prstr.modify(|_, w| w
-        .spi1rst().clear_bit()
-    );
-    p.SPI1.ctlr1.modify(|_, w| { w
-        .bidimode().set_bit()
-        .bidioe().set_bit()
-        .crcen().clear_bit()
-        .crcnext().clear_bit()
-        .dff().clear_bit()
-        .rxonly().clear_bit()
-        .ssm().set_bit()
-        .ssi().set_bit()
-        .lsbfirst().clear_bit()
-        .spe().clear_bit()
-        .br().variant(2_u8)  // 24MHz / 8 => 3Mhz
-        .mstr().set_bit()
-        .cpha().clear_bit()
-        .cpol().clear_bit()
+    p.RCC
+        .apb2pcenr
+        .modify(|_, w| w.spi1en().set_bit().adc1en().set_bit().iopcen().set_bit());
+    p.RCC.apb2prstr.modify(|_, w| w.spi1rst().set_bit());
+    p.RCC.apb2prstr.modify(|_, w| w.spi1rst().clear_bit());
+    p.SPI1.ctlr1.modify(|_, w| {
+        w.bidimode()
+            .set_bit()
+            .bidioe()
+            .set_bit()
+            .crcen()
+            .clear_bit()
+            .crcnext()
+            .clear_bit()
+            .dff()
+            .clear_bit()
+            .rxonly()
+            .clear_bit()
+            .ssm()
+            .set_bit()
+            .ssi()
+            .set_bit()
+            .lsbfirst()
+            .clear_bit()
+            .spe()
+            .clear_bit()
+            .br()
+            .variant(2_u8) // 24MHz / 8 => 3Mhz
+            .mstr()
+            .set_bit()
+            .cpha()
+            .clear_bit()
+            .cpol()
+            .clear_bit()
     });
-    p.SPI1.ctlr1.modify(|_, w| { w
-        .spe().set_bit()
-    });
-    let mut rcc = p.RCC.constrain();    
+    p.SPI1.ctlr1.modify(|_, w| w.spe().set_bit());
+    let mut rcc = p.RCC.constrain();
     let clocks = rcc.config.freeze();
     let gpioc = p.GPIOC.split(&mut rcc);
 
     // Get delay provider
     let mut delay = hal::delay::CycleDelay::new(&clocks);
 
-    let _mosi = gpioc.pc6.into_alternate().set_speed(ch32v00x_hal::gpio::Speed::Mhz50);
-    let _sck = gpioc.pc5.into_alternate().set_speed(ch32v00x_hal::gpio::Speed::Mhz50);
-    let spi = SpiDriver::new(
-        p.SPI1,
-    );
+    let _mosi = gpioc
+        .pc6
+        .into_alternate()
+        .set_speed(ch32v00x_hal::gpio::Speed::Mhz50);
+    let _sck = gpioc
+        .pc5
+        .into_alternate()
+        .set_speed(ch32v00x_hal::gpio::Speed::Mhz50);
+    let spi = SpiDriver::new(p.SPI1);
 
     let mut ws = Ws2812::new(spi);
 
@@ -95,16 +103,13 @@ fn wheel(mut wheel_pos: u8) -> RGB8 {
 }
 
 #[derive(Debug)]
-struct SpiDriver{
+struct SpiDriver {
     spi: ch32v00x_hal::pac::SPI1,
 }
 
 impl SpiDriver {
-    pub fn new(spi: ch32v00x_hal::pac::SPI1) -> Self
-    {
-        Self {
-            spi,
-        }
+    pub fn new(spi: ch32v00x_hal::pac::SPI1) -> Self {
+        Self { spi }
     }
 }
 
@@ -112,7 +117,7 @@ impl spi::ErrorType for SpiDriver {
     type Error = spi::ErrorKind;
 }
 
-impl spi::SpiBus for SpiDriver{
+impl spi::SpiBus for SpiDriver {
     fn read(&mut self, words: &mut [u8]) -> Result<(), Self::Error> {
         todo!()
     }
@@ -120,7 +125,7 @@ impl spi::SpiBus for SpiDriver{
     fn write(&mut self, words: &[u8]) -> Result<(), Self::Error> {
         while self.spi.statr.read().txe().bit_is_clear() {}
         for word in words {
-            self.spi.datar.write(|w| unsafe { w.bits(*word as u32) } );
+            self.spi.datar.write(|w| unsafe { w.bits(*word as u32) });
         }
         Ok(())
     }

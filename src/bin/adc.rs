@@ -5,8 +5,8 @@ use embedded_hal_02::adc::OneShot;
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 
-use ch32v00x_hal::{self as hal};
 use ch32v00x_hal::prelude::*;
+use ch32v00x_hal::{self as hal};
 
 #[qingke_rt::entry]
 fn main() -> ! {
@@ -28,17 +28,17 @@ fn main() -> ! {
     let mut led2 = gpiod.pd4.into_open_drain_output();
 
     let mut pc4 = gpioc.pc4.into_analog();
-    
+
     // let a2 = 2;
-    
+
     let mut delay = hal::delay::CycleDelay::new(&clocks);
     let mut adc = hal::adc::Adc::new(p.ADC1, &clocks);
-    
+
     let mut adc_val: u16 = adc.read(&mut pc4).unwrap();
 
     loop {
         led1.toggle();
-        
+
         let mut counter = 0;
         while counter <= adc_val {
             adc_val = adc.read(&mut pc4).unwrap();
