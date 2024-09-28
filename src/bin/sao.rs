@@ -22,37 +22,37 @@ fn main() -> ! {
 
     p.RCC
         .apb2pcenr
-        .modify(|_, w| w.spi1en().set_bit().adc1en().set_bit().iopcen().set_bit());
+        .modify(|_, w| w.spi1en().set_bit().adc1en().set_bit().iopaen().set_bit().iopcen().set_bit().iopden().set_bit());
     p.RCC.apb2prstr.modify(|_, w| w.spi1rst().set_bit());
     p.RCC.apb2prstr.modify(|_, w| w.spi1rst().clear_bit());
-    p.SPI1.ctlr1.modify(|_, w| {
-        w.bidimode()
+    p.SPI1.ctlr1.modify(|_, w| {w
+        .bidimode()
             .set_bit()
-            .bidioe()
+        .bidioe()
             .set_bit()
-            .crcen()
+        .crcen()
             .clear_bit()
-            .crcnext()
+        .crcnext()
             .clear_bit()
-            .dff()
+        .dff()
             .clear_bit()
-            .rxonly()
+        .rxonly()
             .clear_bit()
-            .ssm()
+        .ssm()
             .set_bit()
-            .ssi()
+        .ssi()
             .set_bit()
-            .lsbfirst()
+        .lsbfirst()
             .clear_bit()
-            .spe()
+        .spe()
             .clear_bit()
-            .br()
+        .br()
             .variant(2_u8) // 24MHz / 8 => 3Mhz
-            .mstr()
+        .mstr()
             .set_bit()
-            .cpha()
+        .cpha()
             .clear_bit()
-            .cpol()
+        .cpol()
             .clear_bit()
     });
     p.SPI1.ctlr1.modify(|_, w| w.spe().set_bit());
@@ -123,19 +123,24 @@ fn main() -> ! {
     let mut green_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
     let mut blue_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
         
-    let scaling: u32 = 255;
+    let scaling: u32 = 1;
     let mut time = 0;
     loop {
         red_data.rotate_right(1);
-        red_data[0] = adc.read(&mut adc_red).unwrap();
+        // red_data[0] = adc.read(&mut adc_red).unwrap();
+        red_data[0] = time % 10 * 300;
         green_data.rotate_right(1);
-        green_data[0] = adc.read(&mut adc_green).unwrap();
+        // green_data[0] = adc.read(&mut adc_green).unwrap();
+        green_data[0] = time % 20 * 200;
         blue_data.rotate_right(1);
-        blue_data[0] = adc.read(&mut adc_blue).unwrap();
+        // blue_data[0] = adc.read(&mut adc_blue).unwrap();
+        blue_data[0] = time % 30 * 100;
         
-        let phase_delay: u32 = adc.read(&mut adc_phase).unwrap();
-        let delay_val: u32 = adc.read(&mut adc_speed).unwrap();
-        
+        // let phase_delay: u32 = adc.read(&mut adc_phase).unwrap();
+        let phase_delay = 0;
+        // let delay_val: u32 = adc.read(&mut adc_speed).unwrap();
+        let delay_val = 5;
+
         let t_red = time;
         let t_green = (time + phase_delay) % 360;
         let t_blue = (time + 2 * phase_delay) % 360;
