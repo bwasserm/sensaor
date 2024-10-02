@@ -12,7 +12,7 @@ use smart_leds::{brightness, SmartLedsWrite, RGB8};
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 
-use ch32v00x_hal::prelude::*;
+use ch32v00x_hal::{prelude::*, println};
 use ch32v00x_hal::{self as hal};
 
 #[qingke_rt::entry]
@@ -22,7 +22,13 @@ fn main() -> ! {
 
     p.RCC
         .apb2pcenr
-        .modify(|_, w| w.spi1en().set_bit().adc1en().set_bit().iopaen().set_bit().iopcen().set_bit().iopden().set_bit());
+        .modify(|_, w| w
+            .spi1en().set_bit()
+            .adc1en().set_bit()
+            .iopaen().set_bit()
+            .iopcen().set_bit()
+            .iopden().set_bit()
+        );
     p.RCC.apb2prstr.modify(|_, w| w.spi1rst().set_bit());
     p.RCC.apb2prstr.modify(|_, w| w.spi1rst().clear_bit());
     p.SPI1.ctlr1.modify(|_, w| {w
@@ -70,10 +76,10 @@ fn main() -> ! {
     let mut adc_green = gpiod.pd5.into_analog();
     let mut adc_blue = gpiod.pd4.into_analog();
     let mut adc_speed = gpioc.pc4.into_analog();
-    let mut _adc_shape = gpioa.pa2.into_analog();
+    let mut adc_shape = gpioa.pa2.into_analog();
     let mut adc_phase = gpioa.pa1.into_analog();
-    let sda = gpioc.pc1.into_alternate_open_drain();
-    let scl = gpioc.pc2.into_alternate_open_drain();
+    let sda = gpioc.pc1.into_floating_input();
+    let scl = gpioc.pc2.into_floating_input();
     let _mosi = gpioc
         .pc6
         .into_alternate()
@@ -84,76 +90,96 @@ fn main() -> ! {
     let mut _gpio2 = gpioc.pc0.into_floating_input();
 
     let mut adc = hal::adc::Adc::new(p.ADC1, &clocks);
-    let _i2c = I2c::i2c1(p.I2C1, scl, sda, I2cConfig::fast_mode(), &mut rcc, &clocks);
+    // let _i2c = I2c::i2c1(p.I2C1, scl, sda, I2cConfig::fast_mode(), &mut rcc, &clocks);
     let spi = SpiDriver::new(p.SPI1);
     let mut ws = Ws2812::new(spi);
 
     // let mut adc_val: u16 = adc.read(&mut pc4).unwrap();
 
     const NUM_LEDS: usize = 62;
-    let mut led_data = [RGB8::default(); NUM_LEDS];
-
-    const LEN_SINE_TABLE: usize = 360;
+    let mut led_data = [RGB8 { r: 0, g: 0, b: 0}; NUM_LEDS];
+    const LEN_SINE_TABLE: usize = 256;
     let sine_table: [u32; LEN_SINE_TABLE] = [
-        128, 130, 132, 134, 136, 139, 141, 143, 145, 147, 150, 152, 154, 156, 158, 160,
-        163, 165, 167, 169, 171, 173, 175, 177, 179, 181, 183, 185, 187, 189, 191, 193,
-        195, 197, 199, 201, 202, 204, 206, 208, 209, 211, 213, 214, 216, 218, 219, 221,
-        222, 224, 225, 227, 228, 229, 231, 232, 233, 234, 236, 237, 238, 239, 240, 241,
-        242, 243, 244, 245, 246, 247, 247, 248, 249, 249, 250, 251, 251, 252, 252, 253,
-        253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        254, 254, 254, 253, 253, 253, 252, 252, 251, 251, 250, 249, 249, 248, 247, 247,
-        246, 245, 244, 243, 242, 241, 240, 239, 238, 237, 236, 234, 233, 232, 231, 229,
-        228, 227, 225, 224, 222, 221, 219, 218, 216, 214, 213, 211, 209, 208, 206, 204,
-        202, 201, 199, 197, 195, 193, 191, 189, 187, 185, 183, 181, 179, 177, 175, 173,
-        171, 169, 167, 165, 163, 160, 158, 156, 154, 152, 150, 147, 145, 143, 141, 139,
-        136, 134, 132, 130, 128, 125, 123, 121, 119, 116, 114, 112, 110, 108, 105, 103,
-        101, 99, 97, 95, 92, 90, 88, 86, 84, 82, 80, 78, 76, 74, 72, 70,
-        68, 66, 64, 62, 60, 58, 56, 54, 53, 51, 49, 47, 46, 44, 42, 41,
-        39, 37, 36, 34, 33, 31, 30, 28, 27, 26, 24, 23, 22, 21, 19, 18,
-        17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4,
-        4, 3, 3, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 5, 6,
-        6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21,
-        22, 23, 24, 26, 27, 28, 30, 31, 33, 34, 36, 37, 39, 41, 42, 44,
-        46, 47, 49, 51, 53, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74,
-        76, 78, 80, 82, 84, 86, 88, 90, 92, 95, 97, 99, 101, 103, 105, 108,
-        110, 112, 114, 116, 119, 121, 123, 125];
+        128, 131, 134, 137, 140, 143, 146, 149, 152, 155, 158, 162, 165, 167, 170, 173,
+        176, 179, 182, 185, 188, 190, 193, 196, 198, 201, 203, 206, 208, 211, 213, 215,
+        218, 220, 222, 224, 226, 228, 230, 232, 234, 235, 237, 238, 240, 241, 243, 244,
+        245, 246, 248, 249, 250, 250, 251, 252, 253, 253, 254, 254, 254, 255, 255, 255,
+        255, 255, 255, 255, 254, 254, 254, 253, 253, 252, 251, 250, 250, 249, 248, 246,
+        245, 244, 243, 241, 240, 238, 237, 235, 234, 232, 230, 228, 226, 224, 222, 220,
+        218, 215, 213, 211, 208, 206, 203, 201, 198, 196, 193, 190, 188, 185, 182, 179,
+        176, 173, 170, 167, 165, 162, 158, 155, 152, 149, 146, 143, 140, 137, 134, 131,
+        128, 124, 121, 118, 115, 112, 109, 106, 103, 100, 97, 93, 90, 88, 85, 82,
+        79, 76, 73, 70, 67, 65, 62, 59, 57, 54, 52, 49, 47, 44, 42, 40,
+        37, 35, 33, 31, 29, 27, 25, 23, 21, 20, 18, 17, 15, 14, 12, 11,
+        10, 9, 7, 6, 5, 5, 4, 3, 2, 2, 1, 1, 1, 0, 0, 0,
+        0, 0, 0, 0, 1, 1, 1, 2, 2, 3, 4, 5, 5, 6, 7, 9,
+        10, 11, 12, 14, 15, 17, 18, 20, 21, 23, 25, 27, 29, 31, 33, 35,
+        37, 40, 42, 44, 47, 49, 52, 54, 57, 59, 62, 65, 67, 70, 73, 76,
+        79, 82, 85, 88, 90, 93, 97, 100, 103, 106, 109, 112, 115, 118, 121, 124
+        ];
     let _adc_max: u32 = adc.max_sample().into();
-    let mut red_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
-    let mut green_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
-    let mut blue_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
+    // let mut red_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
+    // let mut green_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
+    // let mut blue_data: [u32; NUM_LEDS] = [0; NUM_LEDS];
         
-    let scaling: u32 = 1;
-    let mut time = 0;
+    // let mut data = [RGB8 { r: 0, g: 0, b: 0}; NUM_LEDS];
+    // loop {
+        //     for j in 0..(256 * 5) {
+    //         for i in 0..NUM_LEDS {
+    //             data[i] = _wheel((((i * 256) as u16 / NUM_LEDS as u16 + j as u16) & 255) as u8);
+    //         }
+    //         ws.write(brightness(data.iter().cloned(), 16)).unwrap();
+    //         delay.delay_ms(5);
+    //         println!("{} {} {}", data[0], data[1], data[2]);
+    //     }
+    // }
+    
+    // let scaling: u32 = 1;
+    let mut time: u32 = 0;
     loop {
-        red_data.rotate_right(1);
+        let phase_delay: u32 = adc.read(&mut adc_phase).unwrap();
+        let sine_t = sine_table[time as u8 as usize];
+        let green_sine_t = sine_table[(time + phase_delay) as u8 as usize];
+        let blue_sine_t = sine_table[(time + 2 * phase_delay) as u8 as usize];
+        // red_data.rotate_right(1);
         // red_data[0] = adc.read(&mut adc_red).unwrap();
-        red_data[0] = time % 10 * 300;
-        green_data.rotate_right(1);
+        let red_val: u32 = adc.read(&mut adc_red).unwrap();
+        let red_val = (red_val * sine_t) >> 10;
+        // red_data[0] = time % 11 * 300;
+        // green_data.rotate_right(1);
         // green_data[0] = adc.read(&mut adc_green).unwrap();
-        green_data[0] = time % 20 * 200;
-        blue_data.rotate_right(1);
+        let green_val: u32 = adc.read(&mut adc_green).unwrap();
+        let green_val = (green_val * green_sine_t) >> 10;
+        // green_data[0] = time % 13 * 200;
+        // blue_data.rotate_right(1);
         // blue_data[0] = adc.read(&mut adc_blue).unwrap();
-        blue_data[0] = time % 30 * 100;
+        let blue_val: u32 = adc.read(&mut adc_blue).unwrap();
+        let blue_val = (blue_val * blue_sine_t) >> 10;
+        // blue_data[0] = time % 7 * 100;
         
-        // let phase_delay: u32 = adc.read(&mut adc_phase).unwrap();
-        let phase_delay = 0;
-        // let delay_val: u32 = adc.read(&mut adc_speed).unwrap();
-        let delay_val = 5;
+        // let phase_delay = 0;
+        let delay_val: u32 = adc.read(&mut adc_speed).unwrap();
+        let delay_ms: u32 = adc.max_sample() as u32 - delay_val;
+        // let delay_val = 0;
+        let shape_val: u32 = adc.read(&mut adc_shape).unwrap();
 
-        let t_red = time;
-        let t_green = (time + phase_delay) % 360;
-        let t_blue = (time + 2 * phase_delay) % 360;
-        for _ in 0..LEN_SINE_TABLE {
-            for led_num in 0..NUM_LEDS {
-                led_data[led_num] = RGB8 { r: (sine_table[t_red as usize] * red_data[led_num] / scaling) as u8,
-                                           g: (sine_table[t_green as usize] * green_data[led_num] / scaling) as u8,
-                                           b: (sine_table[t_blue as usize] * blue_data[led_num] / scaling) as u8};
+        // let t_red = time % LEN_SINE_TABLE as u32;
+        // let t_green = (time + phase_delay) % LEN_SINE_TABLE as u32;
+        // let t_blue = (time + 2 * phase_delay) % LEN_SINE_TABLE as u32;
+        for _ in 0..delay_ms {
+            for i in 1..NUM_LEDS {
+                led_data[i] = led_data[i - 1].clone();
             }
+            led_data[0] = RGB8 { r: (red_val % 256) as u8,
+                                g: (green_val % 256) as u8,
+                                b: (blue_val % 256) as u8};
+            // ws.write(brightness(led_data.iter().cloned(), 255)).unwrap();
+            // sine_table[time as usize % LEN_SINE_TABLE] as u8
             ws.write(brightness(led_data.iter().cloned(), 32)).unwrap();
-            delay.delay_ms(delay_val);
-            time = (time + 1) % LEN_SINE_TABLE as u32;
+            time = time.wrapping_add(1);
         }
+        // delay.delay_ms(delay_ms);
+        println!("t: {time} LED: {} {} {} delay_ms: {delay_ms} phase: {phase_delay} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
     }
 }
 

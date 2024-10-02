@@ -10,7 +10,7 @@ use smart_leds::{brightness, SmartLedsWrite, RGB8};
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 
-use ch32v00x_hal::prelude::*;
+use ch32v00x_hal::{prelude::*, println};
 use ch32v00x_hal::{self as hal};
 
 #[qingke_rt::entry]
@@ -73,7 +73,7 @@ fn main() -> ! {
 
     let mut ws = Ws2812::new(spi);
 
-    const NUM_LEDS: usize = 59;
+    const NUM_LEDS: usize = 3;
     let mut data = [RGB8::default(); NUM_LEDS];
 
     loop {
@@ -83,6 +83,7 @@ fn main() -> ! {
             }
             ws.write(brightness(data.iter().cloned(), 32)).unwrap();
             delay.delay_ms(5);
+            println!("{} {} {}", data[0], data[1], data[2]);
         }
     }
 }
