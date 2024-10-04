@@ -138,6 +138,7 @@ fn main() -> ! {
     let mut time: u32 = 0;
     loop {
         let phase_delay: u32 = adc.read(&mut adc_phase).unwrap();
+        let phase_delay = phase_delay >> 3;
         let sine_t = sine_table[time as u8 as usize];
         let green_sine_t = sine_table[(time + phase_delay) as u8 as usize];
         let blue_sine_t = sine_table[(time + 2 * phase_delay) as u8 as usize];
@@ -166,20 +167,21 @@ fn main() -> ! {
         // let t_red = time % LEN_SINE_TABLE as u32;
         // let t_green = (time + phase_delay) % LEN_SINE_TABLE as u32;
         // let t_blue = (time + 2 * phase_delay) % LEN_SINE_TABLE as u32;
-        for _ in 0..delay_ms {
-            for i in 1..NUM_LEDS {
-                led_data[i] = led_data[i - 1].clone();
-            }
-            led_data[0] = RGB8 { r: (red_val % 256) as u8,
+        // for _ in 0..delay_ms {
+        for i in (1..NUM_LEDS).rev() {
+            led_data[i] = led_data[i - 1].clone();
+        }
+        led_data[0] = RGB8 { r: (red_val % 256) as u8,
                                 g: (green_val % 256) as u8,
                                 b: (blue_val % 256) as u8};
             // ws.write(brightness(led_data.iter().cloned(), 255)).unwrap();
             // sine_table[time as usize % LEN_SINE_TABLE] as u8
-            ws.write(brightness(led_data.iter().cloned(), 32)).unwrap();
+        ws.write(brightness(led_data.iter().cloned(), 32)).unwrap();
+        for _ in 0..delay_ms {
             time = time.wrapping_add(1);
+            delay.delay_ms(1);
         }
-        // delay.delay_ms(delay_ms);
-        println!("t: {time} LED: {} {} {} delay_ms: {delay_ms} phase: {phase_delay} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
+        println!("t: {time}\nLED: {} {} {}\ndelay_ms: {delay_ms} phase: {phase_delay} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
     }
 }
 
