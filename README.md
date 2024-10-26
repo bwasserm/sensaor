@@ -16,13 +16,36 @@ SAO is a microcontroller that reads a sensor from an input pin, and uses the mea
 Create ports for multiple different sensors to be used, with the ability to solder in different signal conditioning.
 Use ID pins or a solderable resistors to tell firmware how to "read" the sensor and drive the LED in response.
 
-Example sensor modes:
-* Optional invert response pin
-* 0-3.3V
-* Rising edge
-* Falling edge
-* Variance of input
-* Frequency of edges
+# Expected Behaviors
+
+The inputs are read to set the color of the bottom LED. Every cycle, the colors are clocked one LED up the board, and potentially out to an attached strand of addition WS2812s attached at the top. All inputs are read in [0V, 3.3V] as low to high.
+
+## Red/Green/Blue
+These inputs are read to set the base intensity of the LEDs accordingly.
+
+## Speed
+This sets the delay between update cycles from fast (low) to slow (high). Full low has no added delay between cycles, and full high has about 1s between cycles.
+
+## Shape
+This is the mixture ration between setting the output intensity of the colors based directly on the input (low) vs also mixing in a sine wave (high) to the brightness (off to the intensity set by the color input).
+
+## Phase
+When mixing in the sine wave, this delays the mix of the sine wave applied to green and blue relative to red. Low is the same phase of sine wave is applied to all three colors, and high is about 120 degrees of delay to green and 240 degrees of delay to blue.
+
+## ID pins
+Currently unused
+
+## I2C
+Currently unused. Set as high impedance inputs.
+
+## GPIO\[12\]
+Currently unused. Set as high impedance inputs.
+
+## More WS2812
+Connect more Neopixels here to continue clocking out colors beyond the three on the SAO.
+
+## SAOAO
+Hopefully "standard" SAOAO port to connect an SAOAO.
 
 # Resources
 * [Shitty Add-On Version 2.0 Specification](https://docs.google.com/document/u/0/d/1EJqvkkLMAPsQ9VWF5A4elWoi0qMlKyr5Giw5rqRmtnM/mobilebasic?pli=1)
@@ -39,6 +62,7 @@ Example sensor modes:
 * [CH32V003 Processor Manual](https://www.wch-ic.com/downloads/file/369.html)
 * [CH32V003 Datasheet](https://www.wch-ic.com/downloads/file/359.html)
 * [RISC-V Spec](https://riscv.org/wp-content/uploads/2019/12/riscv-spec-20191213.pdf)
+* [SAOAO](https://hackaday.io/project/198060-yo-dawg-sao-introducing-saoao)
 
 
 # Implementation blog

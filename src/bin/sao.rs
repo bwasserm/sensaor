@@ -183,8 +183,8 @@ fn main() -> ! {
             time = time.wrapping_add(1);
             delay.delay_ms(1);
         }
-        println!("{red_val_a}\t{red_val}\t{delay_val}\t{phase_delay}\t{shape_val}\t{dc_offset}");
-        println!("t: {time}\nLED: {} {} {}\ndelay_ms: {delay_ms} phase: {phase_delay_a} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
+        // println!("{red_val_a}\t{red_val}\t{delay_val}\t{phase_delay}\t{shape_val}  {dc_offset}");
+        // println!("t: {time}\nLED: {} {} {}\ndelay_ms: {delay_ms} phase: {phase_delay_a} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
     }
 }
 
