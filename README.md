@@ -99,3 +99,20 @@ The greatest challenge reading the ADC was finding the right part of the HAL to 
 ## Driving the Neopixels
 
 I wanted to use a Neopixel (WS2811/WS2812) library to drive them, but those rely on a timer or SPI implementation for the chip. The hal I'm using for the CH32V003 doesn't implement SPI. After getting annoyed with the traits required to get the existing timer library to work, I figured implementing enough of SPI to write would be easier. With enough time with the manual, and some C examples of setting up SPI on this chip to compare which bits are set in the control registers, I got my neopixel string to change colors.
+
+
+# Programming tips
+
+Including any `println!()` calls without having the debugger connected and watching the serial port will cause the application to block upon a print.
+
+With serial console:
+
+```
+cargo b --release; wlink -v --chip ch32v003 flash .\target\riscv32ec-unknown-none-elf\release\sao --enable-sdi-print --watch-serial
+```
+
+Without serial console:
+
+```
+cargo b --release; wlink -v --chip ch32v003 flash .\target\riscv32ec-unknown-none-elf\release\sao
+```

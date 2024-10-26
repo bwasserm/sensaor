@@ -12,7 +12,8 @@ use smart_leds::{brightness, SmartLedsWrite, RGB8};
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 
-use ch32v00x_hal::{prelude::*, println};
+use ch32v00x_hal::{prelude::*};
+use ch32v00x_hal::println;
 use ch32v00x_hal::{self as hal};
 
 #[qingke_rt::entry]
@@ -137,51 +138,53 @@ fn main() -> ! {
     // let scaling: u32 = 1;
     let mut time: u32 = 0;
     loop {
-        let phase_delay: u32 = adc.read(&mut adc_phase).unwrap();
-        let phase_delay = phase_delay >> 3;
-        let sine_t = sine_table[time as u8 as usize];
-        let green_sine_t = sine_table[(time + phase_delay) as u8 as usize];
-        let blue_sine_t = sine_table[(time + 2 * phase_delay) as u8 as usize];
-        // red_data.rotate_right(1);
-        // red_data[0] = adc.read(&mut adc_red).unwrap();
-        let red_val: u32 = adc.read(&mut adc_red).unwrap();
-        let red_val = (red_val * sine_t) >> 10;
-        // red_data[0] = time % 11 * 300;
-        // green_data.rotate_right(1);
-        // green_data[0] = adc.read(&mut adc_green).unwrap();
-        let green_val: u32 = adc.read(&mut adc_green).unwrap();
-        let green_val = (green_val * green_sine_t) >> 10;
-        // green_data[0] = time % 13 * 200;
-        // blue_data.rotate_right(1);
-        // blue_data[0] = adc.read(&mut adc_blue).unwrap();
-        let blue_val: u32 = adc.read(&mut adc_blue).unwrap();
-        let blue_val = (blue_val * blue_sine_t) >> 10;
-        // blue_data[0] = time % 7 * 100;
+        let phase_delay_a: u32 = adc.read(&mut adc_phase).unwrap();
+        let phase_delay = phase_delay_a >> 3;
+        let sine_red = sine_table[time as u8 as usize];
+        let sine_green = sine_table[(time + phase_delay) as u8 as usize];
+        let sine_blue = sine_table[(time + 2 * phase_delay) as u8 as usize];
+        let shape_val: u32 = adc.read(&mut adc_shape).unwrap();
+        let dc_offset = _adc_max - shape_val;
+
+        let red_val_a: u32 = adc.read(&mut adc_red).unwrap();
+        // red_val_a = x / 1024 (x / 2^10)
+        // sine_red = x / 256 (x / 2^8)
+        // shape_val = x / 1024 (x / 2^10)
+        // red_sine_part = x / 2^16
+        let red_sine_part = (red_val_a * sine_red * shape_val) >> 12;
+        // red_val_a = x / 1024 (x / 2^10)
+        // dc_offset = x / 1024 (x / 2^10)
+        // red_dc_part = x / 2^16
+        let red_dc_part = (red_val_a * dc_offset) >> 4;
+        // red_val = x / 256 (x / 2^8)
+        let red_val = (red_sine_part + red_dc_part) >> 8;
+
+        let green_val_a: u32 = adc.read(&mut adc_green).unwrap();
+        let green_sine_part = (green_val_a * sine_green * shape_val) >> 12;
+        let green_dc_part = (green_val_a * dc_offset) >> 4;
+        let green_val = (green_sine_part + green_dc_part) >> 8;
+
+        let blue_val_a: u32 = adc.read(&mut adc_blue).unwrap();
+        let blue_sine_part = (blue_val_a * sine_blue * shape_val) >> 12;
+        let blue_dc_part = (blue_val_a * dc_offset) >> 4;
+        let blue_val = (blue_sine_part + blue_dc_part) >> 8;
         
-        // let phase_delay = 0;
         let delay_val: u32 = adc.read(&mut adc_speed).unwrap();
         let delay_ms: u32 = adc.max_sample() as u32 - delay_val;
-        // let delay_val = 0;
-        let shape_val: u32 = adc.read(&mut adc_shape).unwrap();
 
-        // let t_red = time % LEN_SINE_TABLE as u32;
-        // let t_green = (time + phase_delay) % LEN_SINE_TABLE as u32;
-        // let t_blue = (time + 2 * phase_delay) % LEN_SINE_TABLE as u32;
-        // for _ in 0..delay_ms {
         for i in (1..NUM_LEDS).rev() {
             led_data[i] = led_data[i - 1].clone();
         }
-        led_data[0] = RGB8 { r: (red_val % 256) as u8,
-                                g: (green_val % 256) as u8,
-                                b: (blue_val % 256) as u8};
-            // ws.write(brightness(led_data.iter().cloned(), 255)).unwrap();
-            // sine_table[time as usize % LEN_SINE_TABLE] as u8
+        led_data[0] = RGB8 { r: (red_val) as u8,
+                             g: (green_val) as u8,
+                             b: (blue_val) as u8};
         ws.write(brightness(led_data.iter().cloned(), 32)).unwrap();
         for _ in 0..delay_ms {
             time = time.wrapping_add(1);
             delay.delay_ms(1);
         }
-        println!("t: {time}\nLED: {} {} {}\ndelay_ms: {delay_ms} phase: {phase_delay} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
+        println!("{red_val_a}\t{red_val}\t{delay_val}\t{phase_delay}\t{shape_val}\t{dc_offset}");
+        println!("t: {time}\nLED: {} {} {}\ndelay_ms: {delay_ms} phase: {phase_delay_a} shape: {shape_val}", led_data[0], led_data[1], led_data[2]);
     }
 }
 
