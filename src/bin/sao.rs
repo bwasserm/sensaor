@@ -12,7 +12,7 @@ use smart_leds::{brightness, SmartLedsWrite, RGB8};
 use embedded_hal_1::delay::DelayNs;
 use panic_halt as _;
 
-use ch32v00x_hal::{prelude::*};
+use ch32v00x_hal::prelude::*;
 use ch32v00x_hal::println;
 use ch32v00x_hal::{self as hal};
 

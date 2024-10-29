@@ -101,6 +101,10 @@ PA1 as an arbitrary GPIO pin choice, but it is already tied to the oscillator.
 I used the [wlink](https://github.com/ch32-rs/wlink) application with the WLinkE . It turned out to be surprisingly easy to run and use to dump registers and flash. It's not even
 necessary to convert the elf file produced by cargo/rustc into an Intel Hex file or a bin first.
 
+```
+cargo install wlink
+```
+
 * Programming command: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 flash target/riscv32ec-unknown-none-elf/debug/sensaor`
 * Get registers command: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 regs`
 * Dump the beginning of program flash: `sudo ~/.cargo/bin/wlink -v --chip ch32v003 dump 0x00000000 400`
@@ -113,6 +117,14 @@ issue on my end.
 
 Using the LEDs on the dev board, it's important to set the GPIO pins into open drain mode, not push-pull. With the extra resistors from push-pull, not enough current flows to turn
 on the LEDs (since they already have resistors installed inline).
+
+### WLink on Windows
+
+On my Windows 10/11 machines, I was getting `Error: USB error: Entity not found` errors when trying to run `wlink status`. This is because the wlink doesn't activate the correct drivers by default.
+
+* See this [github issue](https://github.com/ch32-rs/wlink/issues/5) for an example
+* Install [zadig](https://zadig.akeo.ie/)
+* Select `WCH-Link (Interface 0)` and install the driver `WinUSB`.
 
 ## Reading the ADC to modify the blink
 
@@ -140,3 +152,5 @@ Without serial console:
 ```
 cargo b --release; wlink -v --chip ch32v003 flash .\target\riscv32ec-unknown-none-elf\release\sao
 ```
+
+Note that using `println!()` when sdi print is not enabled or the debugger is not watching serial will cause the program to lock up at the first `println!()`.
