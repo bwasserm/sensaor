@@ -169,8 +169,11 @@ fn main() -> ! {
         let blue_dc_part = (blue_val_a * dc_offset) >> 4;
         let blue_val = (blue_sine_part + blue_dc_part) >> 8;
         
-        let delay_val: u32 = adc.read(&mut adc_speed).unwrap();
-        let delay_ms: u32 = adc.max_sample() as u32 - delay_val;
+        let mut delay_val: u32 = adc.read(&mut adc_speed).unwrap();
+        // println!("{delay_val}");
+        delay_val = (delay_val - 420) * 10;
+        delay_val = delay_val.max(0).min(1000);
+        let delay_ms: u32 = delay_val;
 
         for i in (1..NUM_LEDS).rev() {
             led_data[i] = led_data[i - 1].clone();
